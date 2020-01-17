@@ -215,10 +215,7 @@ static void searchNextChannel(void) {
 
 static void setNextChannel(void)
 {
-
-	bool allZones = strcmp(currentZoneName,currentLanguage->all_channels)==0;
-
-	if (allZones)
+	if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
 	{
 		nonVolatileSettings.currentChannelIndexInAllZone = nextChannelIndex;
 	}
@@ -385,6 +382,13 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
 					}
 				}
+
+				if (uiChannelModeScanActive==true)
+				{
+					strcpy(buffer, "Z");
+					ucFillRect(41, 1, 7, 9, false);
+					ucPrintCore(42, 2, buffer, FONT_6x8, TEXT_ALIGN_LEFT, true);// Display scanning indicator
+				}
 			}
 
 			if (!displayChannelSettings)
@@ -488,6 +492,8 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		menuChannelModeStopScanning();
 		fw_reset_keyboard();
+		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+		menuChannelModeUpdateScreen(0);
 		return;
 	}
 
@@ -555,12 +561,7 @@ static void handleEvent(uiEvent_t *ev)
 			menuChannelModeUpdateScreen(0);
 			return;
 		}
-
-	}
-
-	if (ev->events & KEY_EVENT)
-	{
-		if (KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE))
+		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
@@ -576,12 +577,11 @@ static void handleEvent(uiEvent_t *ev)
 
 			return;
 		}
-		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_ORANGE))
-		{
-			directChannelNumber = 0;
-			startScan();
-		}
-		else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
+	}
+
+	if (ev->events & KEY_EVENT)
+	{
+		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
 			if (directChannelNumber>0)
 			{
@@ -952,6 +952,7 @@ static void handleUpKey(uiEvent_t *ev)
 		scanTimer=500;
 		scanState = SCAN_SCANNING;
 	}
+
 	loadChannelData(false);
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 	menuChannelModeUpdateScreen(0);
@@ -1069,7 +1070,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if ((KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE)) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
+	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
 	{
 		startScan();
 	}
@@ -1151,29 +1152,22 @@ static void scanning(void)
 	    }
 	}
 
+	if (!nextChannelReady)
+	{
+		searchNextChannel();
+	}
+
 	if(scanTimer>0)
 	{
 		scanTimer--;
-
-		if (!nextChannelReady)
-		{
-			searchNextChannel();
-		}
 	}
 	else
 	{
-		//trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		//uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
 
-		//handleUpKey(&tmpEvent);
-
-		if (!nextChannelReady)
-		{
-			searchNextChannel();
-		}
-		else
+		if (nextChannelReady)
 		{
 			setNextChannel();
+			trx_measure_count = 0;
 
 			if ((trxGetMode() == RADIO_MODE_DIGITAL) && (trxDMRMode == DMR_MODE_ACTIVE) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )				//allow extra time if scanning a simplex DMR channel.
 			{
@@ -1186,8 +1180,6 @@ static void scanning(void)
 		}
 
 		scanState = SCAN_SCANNING;													//state 0 = settling and test for carrier present.
-
-
 	}
 }
 
