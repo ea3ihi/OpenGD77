@@ -33,6 +33,9 @@ static void updateQuickMenuScreen(void);
 static void handleQuickMenuEvent(uiEvent_t *ev);
 static void menuChannelUpdateTrxID(void );
 
+static void searchNextChannel(void);
+static void setNextChannel(void);
+
 static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
@@ -68,9 +71,9 @@ static int tmpQuickMenuDmrFilterLevel;
 static bool displayChannelSettings;
 static int prevDisplayQSODataState;
 
-struct_codeplugChannel_t channelNextChannelData={.rxFreq=0};
-bool nextChannelReady = false;
-uint16_t nextChannelIndex = 0;
+static struct_codeplugChannel_t channelNextChannelData={.rxFreq=0};
+static bool nextChannelReady = false;
+static uint16_t nextChannelIndex = 0;
 
 int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 {
@@ -80,6 +83,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
 		displayChannelSettings = false;
+		nextChannelReady = false;
 		prevDisplayQSODataState = QSO_DISPLAY_IDLE;
 		currentChannelData = &channelScreenChannelData;// Need to set this as currentChannelData is used by functions called by loadChannelData()
 		lastHeardClearLastID();
@@ -100,7 +104,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 		menuChannelModeUpdateScreen(0);
 		if (uiChannelModeScanActive==false)
 		{
-			scanState = SCAN_SCANNING;
+			//scanState = SCAN_SCANNING;
 		}
 	}
 	else
@@ -187,7 +191,7 @@ static void searchNextChannel(void) {
 		channel = currentZone.channels[nextChannelIndex];
 	}
 
-	if(channelNextChannelData.flag4 & 0x10 || channelNextChannelData.flag4 & 0x20) {
+	if( (allZones && (channelNextChannelData.flag4 & 0x10)) || channelNextChannelData.flag4 & 0x20) {
 		nextChannelReady = false;
 		return;
 	}
@@ -502,7 +506,7 @@ static void handleEvent(uiEvent_t *ev)
 		if (ev->function == START_SCANNING)
 		{
 			directChannelNumber = 0;
-			startScan();
+			//startScan();
 			return;
 		}
 	}
