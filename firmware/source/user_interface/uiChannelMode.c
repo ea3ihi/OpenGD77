@@ -104,7 +104,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 		menuChannelModeUpdateScreen(0);
 		if (uiChannelModeScanActive==false)
 		{
-			//scanState = SCAN_SCANNING;
+			scanState = SCAN_SCANNING;
 		}
 	}
 	else
