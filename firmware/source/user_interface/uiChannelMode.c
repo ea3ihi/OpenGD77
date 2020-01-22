@@ -165,7 +165,7 @@ uint16_t byteSwap16(uint16_t in)
 #endif
 
 static void searchNextChannel(void) {
-	bool allZones = strcmp(currentZoneName,currentLanguage->all_channels)==0;
+	bool allZones = strcmp(currentZoneName,currentLanguage->all_channels) == 0;
 	int channel = 0;
 	if (allZones)
 	{
@@ -191,23 +191,21 @@ static void searchNextChannel(void) {
 		channel = currentZone.channels[nextChannelIndex];
 	}
 
-	if( (allZones && (channelNextChannelData.flag4 & 0x10)) || channelNextChannelData.flag4 & 0x20) {
-		nextChannelReady = false;
+	if( (allZones && (channelNextChannelData.flag4 & 0x10)) || (!allZones && (channelNextChannelData.flag4 & 0x20))) {
 		return;
 	}
 	else
 	{
 		for(int i=0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)														//check all nuisance delete entries and skip channel if there is a match
 		{
-			if (nuisanceDelete[i]==-1)
+			if (nuisanceDelete[i] == -1)
 			{
 				break;
 			}
 			else
 			{
-				if(nuisanceDelete[i]==channel)
+				if(nuisanceDelete[i] == channel)
 				{
-					nextChannelReady = false;
 					return;
 				}
 			}
@@ -219,7 +217,7 @@ static void searchNextChannel(void) {
 
 static void setNextChannel(void)
 {
-	if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
+	if (strcmp(currentZoneName, currentLanguage->all_channels) == 0)
 	{
 		nonVolatileSettings.currentChannelIndexInAllZone = nextChannelIndex;
 	}
@@ -242,7 +240,7 @@ static void setNextChannel(void)
 static void loadChannelData(bool useChannelDataInMemory)
 {
 
-	if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
+	if (strcmp(currentZoneName, currentLanguage->all_channels) == 0)
 	{
 		settingsCurrentChannelNumber = nonVolatileSettings.currentChannelIndexInAllZone;
 	}
@@ -253,17 +251,17 @@ static void loadChannelData(bool useChannelDataInMemory)
 
 	if (!useChannelDataInMemory)
 	{
-		if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
+		if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
 		{
-			codeplugChannelGetDataForIndex(nonVolatileSettings.currentChannelIndexInAllZone,&channelScreenChannelData);
+			codeplugChannelGetDataForIndex(nonVolatileSettings.currentChannelIndexInAllZone, &channelScreenChannelData);
 		}
 		else
 		{
-			codeplugChannelGetDataForIndex(currentZone.channels[nonVolatileSettings.currentChannelIndexInZone],&channelScreenChannelData);
+			codeplugChannelGetDataForIndex(currentZone.channels[nonVolatileSettings.currentChannelIndexInZone], &channelScreenChannelData);
 		}
 	}
 
-	trxSetFrequency(channelScreenChannelData.rxFreq,channelScreenChannelData.txFreq,DMR_MODE_AUTO);
+	trxSetFrequency(channelScreenChannelData.rxFreq, channelScreenChannelData.txFreq, DMR_MODE_AUTO);
 
 	if (channelScreenChannelData.chMode == RADIO_MODE_ANALOG)
 	{
@@ -284,7 +282,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 		}
 		else
 		{
-			codeplugContactGetDataForIndex(channelScreenChannelData.contact,&contactData);
+			codeplugContactGetDataForIndex(channelScreenChannelData.contact, &contactData);
 		}
 
 		trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
@@ -387,7 +385,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					}
 				}
 
-				if (uiChannelModeScanActive==true)
+				if (uiChannelModeScanActive)
 				{
 					strcpy(buffer, "Z");
 					ucFillRect(41, 1, 7, 9, false);
@@ -478,7 +476,7 @@ static void handleEvent(uiEvent_t *ev)
 	// if we are scanning and down key is pressed then enter current channel into nuisance delete array.
 	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
 	{
-		nuisanceDelete[nuisanceDeleteIndex++]=settingsCurrentChannelNumber;
+		nuisanceDelete[nuisanceDeleteIndex++] = settingsCurrentChannelNumber;
 		if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
 		{
 			nuisanceDeleteIndex = 0; //rolling list of last MAX_NUISANCE_CHANNELS deletes.
@@ -506,7 +504,7 @@ static void handleEvent(uiEvent_t *ev)
 		if (ev->function == START_SCANNING)
 		{
 			directChannelNumber = 0;
-			//startScan();
+			startScan();
 			return;
 		}
 	}
@@ -523,7 +521,7 @@ static void handleEvent(uiEvent_t *ev)
 
 
 			// Set TS to overriden TS
-			if (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())
+			if (dmrMonitorCapturedTS != -1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())
 			{
 				trxSetDMRTimeSlot(dmrMonitorCapturedTS);
 				nonVolatileSettings.tsManualOverride &= 0xF0;// Clear lower nibble value
@@ -589,11 +587,11 @@ static void handleEvent(uiEvent_t *ev)
 		{
 			if (directChannelNumber>0)
 			{
-				if(strcmp(currentZoneName,currentLanguage->all_channels)==0)
+				if(strcmp(currentZoneName,currentLanguage->all_channels) == 0)
 				{
 					if (codeplugChannelIndexIsValid(directChannelNumber))
 					{
-						nonVolatileSettings.currentChannelIndexInAllZone=directChannelNumber;
+						nonVolatileSettings.currentChannelIndexInAllZone = directChannelNumber;
 						loadChannelData(false);
 					}
 					else
@@ -605,7 +603,7 @@ static void handleEvent(uiEvent_t *ev)
 				{
 					if (directChannelNumber-1<currentZone.NOT_IN_MEMORY_numChannelsInZone)
 					{
-						nonVolatileSettings.currentChannelIndexInZone=directChannelNumber-1;
+						nonVolatileSettings.currentChannelIndexInZone = directChannelNumber-1;
 						loadChannelData(false);
 					}
 					else
@@ -614,7 +612,7 @@ static void handleEvent(uiEvent_t *ev)
 					}
 
 				}
-				directChannelNumber=0;
+				directChannelNumber = 0;
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				menuChannelModeUpdateScreen(0);
 			}
@@ -643,7 +641,7 @@ static void handleEvent(uiEvent_t *ev)
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 		{
-			if ((ev->buttons & BUTTON_SK2 )!=0 && menuUtilityTgBeforePcMode != 0)
+			if ((ev->buttons & BUTTON_SK2 ) != 0 && menuUtilityTgBeforePcMode != 0)
 			{
 				nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
 				menuClearPrivateCall();
@@ -653,9 +651,9 @@ static void handleEvent(uiEvent_t *ev)
 				menuChannelModeUpdateScreen(0);
 				return;// The event has been handled
 			}
-			if(directChannelNumber>0)
+			if(directChannelNumber > 0)
 			{
-				directChannelNumber=0;
+				directChannelNumber = 0;
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				menuChannelModeUpdateScreen(0);
 			}
@@ -665,7 +663,7 @@ static void handleEvent(uiEvent_t *ev)
 				return;
 			}
 		}
-		else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
+		else if (KEYCHECK_PRESS(ev->keys, KEY_RIGHT))
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
@@ -770,7 +768,7 @@ static void handleEvent(uiEvent_t *ev)
 
 			}
 		}
-		else if (KEYCHECK_SHORTUP(ev->keys,KEY_STAR))
+		else if (KEYCHECK_SHORTUP(ev->keys, KEY_STAR))
 		{
 			// Toggle TimeSlot
 			if (ev->buttons & BUTTON_SK2 )
@@ -832,7 +830,7 @@ static void handleEvent(uiEvent_t *ev)
 				menuChannelModeUpdateScreen(0);
 			}
 		}
-		else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
+		else if (KEYCHECK_PRESS(ev->keys, KEY_DOWN))
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
@@ -854,14 +852,14 @@ static void handleEvent(uiEvent_t *ev)
 			else
 			{
 				lastHeardClearLastID();
-				if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
+				if (strcmp(currentZoneName, currentLanguage->all_channels)==0)
 				{
 					do
 					{
 						nonVolatileSettings.currentChannelIndexInAllZone--;
 						if (nonVolatileSettings.currentChannelIndexInAllZone<1)
 						{
-							nonVolatileSettings.currentChannelIndexInAllZone=1024;
+							nonVolatileSettings.currentChannelIndexInAllZone = 1024;
 						}
 					} while(!codeplugChannelIndexIsValid(nonVolatileSettings.currentChannelIndexInAllZone));
 				}
@@ -870,7 +868,7 @@ static void handleEvent(uiEvent_t *ev)
 					nonVolatileSettings.currentChannelIndexInZone--;
 					if (nonVolatileSettings.currentChannelIndexInZone < 0)
 					{
-						nonVolatileSettings.currentChannelIndexInZone =  currentZone.NOT_IN_MEMORY_numChannelsInZone - 1;
+						nonVolatileSettings.currentChannelIndexInZone = currentZone.NOT_IN_MEMORY_numChannelsInZone - 1;
 					}
 				}
 			}
@@ -888,12 +886,12 @@ static void handleEvent(uiEvent_t *ev)
 
 			if (keyval < 10)
 			{
-				directChannelNumber=(directChannelNumber*10) + keyval;
-				if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
+				directChannelNumber = (directChannelNumber*10) + keyval;
+				if (strcmp(currentZoneName, currentLanguage->all_channels)==0)
 				{
 					if(directChannelNumber>1024)
 					{
-						directChannelNumber=0;
+						directChannelNumber = 0;
 						set_melody(melody_ERROR_beep);
 					}
 				}
@@ -933,14 +931,14 @@ static void handleUpKey(uiEvent_t *ev)
 	else
 	{
 		lastHeardClearLastID();
-		if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
+		if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
 		{
 			do
 			{
 				nonVolatileSettings.currentChannelIndexInAllZone++;
-				if (nonVolatileSettings.currentChannelIndexInAllZone>1024)
+				if (nonVolatileSettings.currentChannelIndexInAllZone > 1024)
 				{
-					nonVolatileSettings.currentChannelIndexInAllZone=1;
+					nonVolatileSettings.currentChannelIndexInAllZone = 1;
 				}
 			} while(!codeplugChannelIndexIsValid(nonVolatileSettings.currentChannelIndexInAllZone));
 		}
@@ -1017,7 +1015,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys, KEY_GREEN))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -1042,7 +1040,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		}
 		return;
 	}
-	else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
+	else if (KEYCHECK_PRESS(ev->keys, KEY_RIGHT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -1054,7 +1052,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				break;
 		}
 	}
-	else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
+	else if (KEYCHECK_PRESS(ev->keys, KEY_LEFT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -1066,11 +1064,11 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				break;
 		}
 	}
-	else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
+	else if (KEYCHECK_PRESS(ev->keys, KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys, KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
@@ -1108,13 +1106,13 @@ static void startScan(void)
 		nuisanceDelete[i]=-1;
 		nuisanceDeleteIndex=0;
 	}
-	uiChannelModeScanActive=true;
+	uiChannelModeScanActive = true;
 	scanTimer = SCAN_SHORT_PAUSE_TIME;
 	scanState = SCAN_SCANNING;
 	menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 
 	//get current channel index
-	if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
+	if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
 	{
 		nextChannelIndex = nonVolatileSettings.currentChannelIndexInAllZone;
 	}
@@ -1128,7 +1126,7 @@ static void startScan(void)
 
 static void scanning(void)
 {
-	if((scanState==SCAN_SCANNING) && (scanTimer > SCAN_SKIP_CHANNEL_INTERVAL) && (scanTimer < ( SCAN_TOTAL_INTERVAL - SCAN_FREQ_CHANGE_SETTLING_INTERVAL)))							    			//after initial settling time
+	if((scanState == SCAN_SCANNING) && (scanTimer > SCAN_SKIP_CHANNEL_INTERVAL) && (scanTimer < ( SCAN_TOTAL_INTERVAL - SCAN_FREQ_CHANGE_SETTLING_INTERVAL)))							    			//after initial settling time
 	{
 		//test for presence of RF Carrier.
 		// In FM mode the dmr slot_state will always be DMR_STATE_IDLE
@@ -1141,18 +1139,18 @@ static void scanning(void)
 		{
 			if(trx_carrier_detected() )
 			{
-				scanTimer=SCAN_SHORT_PAUSE_TIME;												//start short delay to allow full detection of signal
-				scanState=SCAN_SHORT_PAUSED;															//state 1 = pause and test for valid signal that produces audio
+				scanTimer = SCAN_SHORT_PAUSE_TIME;	//start short delay to allow full detection of signal
+				scanState = SCAN_SHORT_PAUSED;		//state 1 = pause and test for valid signal that produces audio
 			}
 		}
 	}
 
-	if(((scanState==SCAN_PAUSED)&&(nonVolatileSettings.scanModePause==false)) || (scanState==SCAN_SHORT_PAUSED))   // only do this once if scan mode is PAUSE do it every time if scan mode is HOLD
+	if(((scanState==SCAN_PAUSED)&&(nonVolatileSettings.scanModePause == false)) || (scanState==SCAN_SHORT_PAUSED))   // only do this once if scan mode is PAUSE do it every time if scan mode is HOLD
 	{
-	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)	    	// if speaker on we must be receiving a signal so extend the time before resuming scan.
+	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1)	    	// if speaker on we must be receiving a signal so extend the time before resuming scan.
 	    {
-	    	scanTimer=nonVolatileSettings.scanDelay*1000;
-	    	scanState=SCAN_PAUSED;
+	    	scanTimer = nonVolatileSettings.scanDelay*1000;
+	    	scanState = SCAN_PAUSED;
 	    }
 	}
 
@@ -1161,7 +1159,7 @@ static void scanning(void)
 		searchNextChannel();
 	}
 
-	if(scanTimer>0)
+	if(scanTimer > 0)
 	{
 		scanTimer--;
 	}
