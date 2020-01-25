@@ -37,6 +37,7 @@ int menuSplashScreen(uiEvent_t *ev, bool isFirstRun)
 			set_melody(melody_poweron);
 		}
 		updateScreen();
+		initialiseContactsIndex();
 	}
 	else
 	{

@@ -91,6 +91,13 @@ typedef struct struct_codeplugContact
 	int         NOT_IN_CODEPLUGDATA_indexNumber;
 } struct_codeplugContact_t;
 
+typedef struct struct_codeplugContactIndex
+{
+	uint32_t 	tgNumber;
+	uint16_t	contactNumber;
+} struct_codeplugContactIndex_t;
+
+
 typedef struct struct_codeplugDTMFContact
 {
 	char name[16];
@@ -134,6 +141,7 @@ bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channe
 
 int codeplugContactsGetCount(int callType);
 int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugContact_t *contact);
+void initialiseContactsIndex(void);
 int codeplugContactIndexByTGorPC(int tgorpc, int callType, struct_codeplugContact_t *contact);
 int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact);
 int codeplugContactGetFreeIndex(void);

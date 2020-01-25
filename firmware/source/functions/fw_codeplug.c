@@ -66,6 +66,8 @@ const int VFO_FREQ_STEP_TABLE[8] = {250,500,625,1000,1250,2500,3000,5000};
 const int CODEPLUG_MAX_VARIABLE_SQUELCH = 21;
 const int CODEPLUG_MIN_VARIABLE_SQUELCH = 1;
 
+struct_codeplugContactIndex_t contactsIndex[1024];
+
 uint32_t byteSwap32(uint32_t n)
 {
     return ((((n)&0x000000FFU) << 24U) | (((n)&0x0000FF00U) << 8U) | (((n)&0x00FF0000U) >> 8U) | (((n)&0xFF000000U) >> 24U));// from usb_misc.h
@@ -446,14 +448,27 @@ int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugCon
 	return pos;
 }
 
+void initialiseContactsIndex() {
+	struct_codeplugContact_t contact;
+	for (int i = 1; i <= 1024; i++)
+		{
+			codeplugContactGetDataForIndex(i, &contact);
+			contactsIndex[i-1].tgNumber = contact.tgNumber;
+			contactsIndex[i-1].contactNumber = i;
+		}
+}
+
 int codeplugContactIndexByTGorPC(int tgorpc, int callType, struct_codeplugContact_t *contact)
 {
 	for (int i = 1; i <= 1024; i++)
 	{
-		codeplugContactGetDataForIndex(i, contact);
-		if (contact->name[0] != 0xff && contact->tgNumber == tgorpc && contact->callType == callType)
+		if (contactsIndex[i-1].tgNumber == tgorpc)
 		{
-			return i;
+			codeplugContactGetDataForIndex(i, contact);
+			if (contact->name[0] != 0xff && contact->tgNumber == tgorpc && contact->callType == callType)
+			{
+				return i;
+			}
 		}
 	}
 	return 0;
