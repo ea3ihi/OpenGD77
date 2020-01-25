@@ -448,14 +448,14 @@ int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugCon
 	return pos;
 }
 
-void initialiseContactsIndex() {
+void initialiseContactsIndex(void) {
 	struct_codeplugContact_t contact;
 	for (int i = 1; i <= 1024; i++)
-		{
-			codeplugContactGetDataForIndex(i, &contact);
-			contactsIndex[i-1].tgNumber = contact.tgNumber;
-			contactsIndex[i-1].contactNumber = i;
-		}
+	{
+		codeplugContactGetDataForIndex(i, &contact);
+		contactsIndex[i-1].tgNumber = contact.tgNumber;
+		contactsIndex[i-1].contactNumber = i;
+	}
 }
 
 int codeplugContactIndexByTGorPC(int tgorpc, int callType, struct_codeplugContact_t *contact)
